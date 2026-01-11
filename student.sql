@@ -1,7 +1,4 @@
 
--- SQL Script: STUDENT Table Operations
-
--- 1. Create Table
 CREATE TABLE STUDENT (
     SID INT PRIMARY KEY,
     NAME VARCHAR(50),
@@ -12,7 +9,6 @@ CREATE TABLE STUDENT (
     EMAIL VARCHAR(50)
 );
 
--- 2. Insert 10 Tuples
 INSERT INTO STUDENT (SID, NAME, BRANCH, SEMESTER, ADDRESS, PHONE, EMAIL)
 VALUES
 (101, 'Ananya Rao', 'CSE', 5, 'Kuvempunagar', '9876543210', 'ananya.cse@gmail.com'),
@@ -26,26 +22,26 @@ VALUES
 (109, 'Nisha Gowda', 'CIVIL', 7, 'Bogadi', '9654321098', 'nisha.civil@gmail.com'),
 (110, 'Karthik Joshi', 'CSE', 5, 'Kuvempunagar', '9345678901', 'karthik.cse@gmail.com');
 
--- 3. a. Insert a New Student
+
 INSERT INTO STUDENT (SID, NAME, BRANCH, SEMESTER, ADDRESS, PHONE, EMAIL)
 VALUES (111, 'Raksha B R', 'CSE', 3, 'Saraswathipuram', '9823456789', 'raksha.cse@gmail.com');
 
--- 4. b. Modify Address based on SID
+
 UPDATE STUDENT
 SET ADDRESS = 'Hebbal'
 WHERE SID = 103;
 
--- 5. c. Delete a Student
+
 DELETE FROM STUDENT
 WHERE SID = 109;
 
--- 6. d. List All Students
+
 SELECT * FROM STUDENT;
 
--- 7. e. List All Students of CSE Branch
+
 SELECT * FROM STUDENT
 WHERE BRANCH = 'CSE';
 
--- 8. f. List All Students of CSE Branch residing in Kuvempunagar
+
 SELECT * FROM STUDENT
 WHERE BRANCH = 'CSE' AND ADDRESS = 'Kuvempunagar';

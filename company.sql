@@ -1,0 +1,87 @@
+DROP DATABASE IF EXISTS company;
+CREATE DATABASE company;
+USE company;
+
+
+
+CREATE TABLE EMPLOYEE (
+    SSN INT PRIMARY KEY,
+    EName VARCHAR(100),
+    Address VARCHAR(100),
+    Sex VARCHAR(10),
+    Salary DECIMAL(10,2),
+    SuperSSN INT,
+    DNo INT
+);
+
+CREATE TABLE DEPARTMENT (
+    DNo INT PRIMARY KEY,
+    DName VARCHAR(100),
+    MgrSSN INT,
+    MgrStartDate DATE,
+    FOREIGN KEY (MgrSSN) REFERENCES EMPLOYEE(SSN) ON DELETE CASCADE
+);
+
+CREATE TABLE DLOCATION (
+    DNo INT PRIMARY KEY,
+    DLoc VARCHAR(200),
+    FOREIGN KEY (DNo) REFERENCES DEPARTMENT(DNo) ON DELETE CASCADE
+);
+
+CREATE TABLE PROJECT (
+    PNo INT PRIMARY KEY,
+    PName VARCHAR(50),
+    PLocation VARCHAR(100),
+    DNo INT,
+    FOREIGN KEY (DNo) REFERENCES DEPARTMENT(DNo) ON DELETE CASCADE
+);
+
+CREATE TABLE WORKS_ON (
+    SSN INT,
+    PNo INT,
+    Hours DECIMAL(6,2),
+    FOREIGN KEY (SSN) REFERENCES EMPLOYEE(SSN) ON DELETE CASCADE,
+    FOREIGN KEY (PNo) REFERENCES PROJECT(PNo) ON DELETE CASCADE
+);
+
+
+INSERT INTO EMPLOYEE VALUES
+(111,'Scott','1st Main','Male',700000,112,1),
+(112,'Emma','2nd Main','Female',700000,NULL,1),
+(113,'Starc','3rd Main','Male',700000,112,1),
+(114,'Sophie','4th Main','Female',700000,112,1),
+(115,'Smith','5th Main','Female',700000,112,1),
+(116,'David','1st Main','Male',60000,112,2),
+(117,'Tom','2nd Main','Female',150000,NULL,3),
+(118,'Tim','3rd Main','Male',70000,112,4),
+(119,'Yash','4th Main','Female',80000,112,5),
+(110,'Smriti','5th Main','Female',90000,112,6);
+
+INSERT INTO DEPARTMENT VALUES
+(1,'Accounts',113,'2020-01-10'),
+(2,'Finance',114,'2020-02-10'),
+(3,'Research',115,'2020-03-10'),
+(4,'Sales',115,'2020-04-10'),
+(5,'Production',112,'2020-05-10'),
+(6,'Services',114,'2020-07-20');
+
+INSERT INTO DLOCATION VALUES
+(1,'London'),
+(2,'USA'),
+(3,'Qatar'),
+(4,'South Africa'),
+(5,'Australia');
+
+INSERT INTO PROJECT VALUES
+(701,'Project1','London',1),
+(702,'Project2','USA',2),
+(703,'IoT','Qatar',3),
+(704,'Internet','South Africa',4),
+(705,'Project5','Australia',5);
+
+INSERT INTO WORKS_ON VALUES
+(111,701,120.1),
+(112,702,130.21),
+(113,703,130.41),
+(114,704,150.21),
+(115,705,90.89);
