@@ -10,7 +10,7 @@ struct Student {
     char ADDRESS[50];
 };
 
-/* a. Insert new student */
+
 void insertStudent() {
     struct Student s;
     FILE *fp = fopen("student.dat", "ab");
