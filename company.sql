@@ -1,87 +1,215 @@
-DROP DATABASE IF EXISTS company;
-CREATE DATABASE company;
-USE company;
+
+CREATE DATABASE Company_DB;
+USE Company_DB;
 
 
+CREATE TABLE DEPARTMENT (
+    DNO INT PRIMARY KEY,
+    DName VARCHAR(25),
+    MgrSSN INT,
+    MgrStartDate DATE
+);
 
 CREATE TABLE EMPLOYEE (
     SSN INT PRIMARY KEY,
-    EName VARCHAR(100),
-    Address VARCHAR(100),
-    Sex VARCHAR(10),
-    Salary DECIMAL(10,2),
+    Name VARCHAR(25),
+    Address VARCHAR(255),
+    Sex CHAR(1),
+    Salary FLOAT,
     SuperSSN INT,
-    DNo INT
+    DNO INT,
+    FOREIGN KEY (DNO) REFERENCES DEPARTMENT(DNO)
+        ON DELETE CASCADE,
+    FOREIGN KEY (SuperSSN) REFERENCES EMPLOYEE(SSN)
 );
 
-CREATE TABLE DEPARTMENT (
-    DNo INT PRIMARY KEY,
-    DName VARCHAR(100),
-    MgrSSN INT,
-    MgrStartDate DATE,
-    FOREIGN KEY (MgrSSN) REFERENCES EMPLOYEE(SSN) ON DELETE CASCADE
-);
 
 CREATE TABLE DLOCATION (
-    DNo INT PRIMARY KEY,
-    DLoc VARCHAR(200),
-    FOREIGN KEY (DNo) REFERENCES DEPARTMENT(DNo) ON DELETE CASCADE
+    DNO INT,
+    DLoc VARCHAR(255),
+    FOREIGN KEY (DNO) REFERENCES DEPARTMENT(DNO)
+        ON DELETE CASCADE
 );
 
+
 CREATE TABLE PROJECT (
-    PNo INT PRIMARY KEY,
-    PName VARCHAR(50),
-    PLocation VARCHAR(100),
-    DNo INT,
-    FOREIGN KEY (DNo) REFERENCES DEPARTMENT(DNo) ON DELETE CASCADE
+    PNO INT PRIMARY KEY,
+    PName VARCHAR(255),
+    PLocation VARCHAR(255),
+    DNO INT,
+    FOREIGN KEY (DNO) REFERENCES DEPARTMENT(DNO)
+        ON DELETE CASCADE
 );
+
 
 CREATE TABLE WORKS_ON (
     SSN INT,
-    PNo INT,
-    Hours DECIMAL(6,2),
-    FOREIGN KEY (SSN) REFERENCES EMPLOYEE(SSN) ON DELETE CASCADE,
-    FOREIGN KEY (PNo) REFERENCES PROJECT(PNo) ON DELETE CASCADE
+    PNO INT,
+    Hours INT,
+    FOREIGN KEY (SSN) REFERENCES EMPLOYEE(SSN)
+        ON DELETE CASCADE,
+    FOREIGN KEY (PNO) REFERENCES PROJECT(PNO)
+        ON DELETE CASCADE
 );
 
 
-INSERT INTO EMPLOYEE VALUES
-(111,'Scott','1st Main','Male',700000,112,1),
-(112,'Emma','2nd Main','Female',700000,NULL,1),
-(113,'Starc','3rd Main','Male',700000,112,1),
-(114,'Sophie','4th Main','Female',700000,112,1),
-(115,'Smith','5th Main','Female',700000,112,1),
-(116,'David','1st Main','Male',60000,112,2),
-(117,'Tom','2nd Main','Female',150000,NULL,3),
-(118,'Tim','3rd Main','Male',70000,112,4),
-(119,'Yash','4th Main','Female',80000,112,5),
-(110,'Smriti','5th Main','Female',90000,112,6);
-
 INSERT INTO DEPARTMENT VALUES
-(1,'Accounts',113,'2020-01-10'),
-(2,'Finance',114,'2020-02-10'),
-(3,'Research',115,'2020-03-10'),
-(4,'Sales',115,'2020-04-10'),
-(5,'Production',112,'2020-05-10'),
-(6,'Services',114,'2020-07-20');
+(201, 'Human Resources', 1, '2020-10-21'),
+(202, 'Quality Assessment', 4, '2020-10-19'),
+(203, 'System Assessment', 5, '2020-10-27'),
+(204, 'Accounts', 2, '2020-09-04'),
+(205, 'Production', 3, '2020-08-16');
+
+
+
+INSERT INTO EMPLOYEE VALUES
+(1, 'Chandan_Krishna', 'Siddartha Nagar, Mysuru', 'M', 1500000, NULL, 205),
+(2, 'Employee_2', 'Lakshmipuram, Mysuru', 'F', 1200000, 1, 202),
+(3, 'Employee_3', 'Pune, Maharashtra', 'M', 1000000, 1, 204),
+(4, 'Employee_4', 'Hyderabad, Telangana', 'M', 2500000, 2, 205),
+(5, 'Employee_5', 'JP Nagar, Bengaluru', 'F', 1700000, 2, 201);
+
+
 
 INSERT INTO DLOCATION VALUES
-(1,'London'),
-(2,'USA'),
-(3,'Qatar'),
-(4,'South Africa'),
-(5,'Australia');
+(201, 'Jaynagar, Bengaluru'),
+(202, 'Vijaynagar, Mysuru'),
+(203, 'Chennai, Tamil Nadu'),
+(204, 'Mumbai, Maharashtra'),
+(205, 'Kuvempunagar, Mysuru');
+
 
 INSERT INTO PROJECT VALUES
-(701,'Project1','London',1),
-(702,'Project2','USA',2),
-(703,'IoT','Qatar',3),
-(704,'Internet','South Africa',4),
-(705,'Project5','Australia',5);
+(241563, 'System Testing', 'Mumbai, Maharashtra', 204),
+(532678, 'IoT', 'JP Nagar, Bengaluru', 201),
+(453723, 'Product Optimization', 'Hyderabad, Telangana', 205),
+(278345, 'Yield Increase', 'Kuvempunagar, Mysuru', 205),
+(426784, 'Product Refinement', 'Saraswatipuram, Mysuru', 202);
+
+
 
 INSERT INTO WORKS_ON VALUES
-(111,701,120.1),
-(112,702,130.21),
-(113,703,130.41),
-(114,704,150.21),
-(115,705,90.89);
+(1, 278345, 5),
+(2, 426784, 6),
+(5, 532678, 3),
+(3, 241563, 3),
+(4, 453723, 6);
+
+-- 1.
+SELECT w.PNO
+FROM EMPLOYEE e
+JOIN WORKS_ON w ON e.SSN = w.SSN
+WHERE e.Name LIKE '%Scott'
+
+UNION
+
+SELECT p.PNO
+FROM EMPLOYEE e
+JOIN DEPARTMENT d ON e.SSN = d.MgrSSN
+JOIN PROJECT p ON d.DNO = p.DNO
+WHERE e.Name LIKE '%Scott';
+
+
+-- 2.
+SELECT
+    e.Name,
+    e.Salary AS Current_Salary,
+    e.Salary * 1.10 AS Increased_Salary
+FROM EMPLOYEE e
+JOIN WORKS_ON w ON e.SSN = w.SSN
+JOIN PROJECT p ON w.PNO = p.PNO
+WHERE p.PName = 'IoT';
+
+
+-- 3.
+SELECT
+    SUM(e.Salary) AS Total_Salary,
+    MAX(e.Salary) AS Max_Salary,
+    MIN(e.Salary) AS Min_Salary,
+    AVG(e.Salary) AS Avg_Salary
+FROM EMPLOYEE e
+JOIN DEPARTMENT d ON e.DNO = d.DNO
+WHERE d.DName = 'Accounts';
+
+
+-- 4.
+
+
+SELECT E.Name
+FROM EMPLOYEE E
+WHERE NOT EXISTS (
+    SELECT P.PNO
+    FROM PROJECT P
+    WHERE P.DNO = 5
+      AND P.PNO NOT IN (
+          SELECT W.PNO
+          FROM WORKS_ON W
+          WHERE W.SSN = E.SSN
+      )
+);
+
+/* the WHERE NOT EXISTS BLOCK FINDS :🧠 BIG PICTURE: What is this block trying to find?
+This block tries to find:
+Projects of department 5 that the current employee does NOT work on
+That’s the whole purpose.
+
+THE P.PNO NOT IN BLOCK FINDS THE ALL THE PNO NUMBER OF PROJ THAT EMPLOEE IS WORKING ON !!
+*/
+
+
+
+
+-- 5.
+SELECT
+    E.DNO AS DepartmentNumber,
+    COUNT(E.SSN) AS EmployeesAbove600000
+FROM EMPLOYEE E
+WHERE
+    E.Salary > 600000
+    AND E.DNO IN (
+        SELECT DNO
+        FROM EMPLOYEE
+        GROUP BY DNO
+        HAVING COUNT(*) >5
+    )
+GROUP BY E.DNO;
+
+
+
+-- 6.
+CREATE VIEW Employee_Department_Location AS
+SELECT
+    E.Name AS EmployeeName,
+    D.DName AS DepartmentName,
+    L.DLoc AS Location
+FROM EMPLOYEE E
+JOIN DEPARTMENT D ON E.DNO = D.DNO
+JOIN DLOCATION L ON D.DNO = L.DNO;
+
+
+SELECT * FROM Employee_Department_Location;
+
+-- 7.
+DELIMITER //
+
+CREATE TRIGGER PREVENT_DELETE
+BEFORE DELETE ON PROJECT
+FOR EACH ROW
+BEGIN
+    IF EXISTS (
+        SELECT *
+        FROM WORKS_ON
+        WHERE PNo = OLD.PNo
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'The project cannot be deleted as it has an assigned employee';
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+
+DELETE FROM PROJECT WHERE PNo = 278345;
+
+~

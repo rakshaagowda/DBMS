@@ -1,81 +1,101 @@
--- 1. Projects involving employee named Scott
-SELECT * FROM PROJECT
-WHERE DNo IN (SELECT DNo FROM EMPLOYEE WHERE EName LIKE '%Scott%')
-OR DNo IN (
-    SELECT DNo FROM DEPARTMENT
-    WHERE MgrSSN IN (SELECT SSN FROM EMPLOYEE WHERE EName LIKE '%Scott%')
-);
+-- 1.
+SELECT w.PNO
+FROM EMPLOYEE e
+JOIN WORKS_ON w ON e.SSN = w.SSN
+WHERE e.Name LIKE '%Scott'
 
--- 2. 10% salary hike for employees working on IoT project
-UPDATE EMPLOYEE
-SET Salary = Salary * 1.1
-WHERE SSN IN (
-    SELECT SSN FROM WORKS_ON
-    WHERE PNo = (SELECT PNo FROM PROJECT WHERE PName='IoT')
-);
+UNION
 
-SELECT SSN, EName, Salary FROM EMPLOYEE
-WHERE SSN IN (
-    SELECT SSN FROM WORKS_ON
-    WHERE PNo = (SELECT PNo FROM PROJECT WHERE PName='IoT')
-);
+SELECT p.PNO
+FROM EMPLOYEE e
+JOIN DEPARTMENT d ON e.SSN = d.MgrSSN
+JOIN PROJECT p ON d.DNO = p.DNO
+WHERE e.Name LIKE '%Scott';
 
--- 3. Salary statistics for Accounts department
+-- 2.
 SELECT
-SUM(E.Salary) AS TotalSalary,
-MAX(E.Salary) AS MaxSalary,
-MIN(E.Salary) AS MinSalary,
-AVG(E.Salary) AS AvgSalary
-FROM EMPLOYEE E
-JOIN DEPARTMENT D ON E.DNo = D.DNo
-WHERE D.DName='Accounts';
+    e.Name,
+    e.Salary AS Current_Salary,
+    e.Salary * 1.10 AS Increased_Salary
+FROM EMPLOYEE e
+JOIN WORKS_ON w ON e.SSN = w.SSN
+JOIN PROJECT p ON w.PNO = p.PNO
+WHERE p.PName = 'IoT';
 
--- 4. Employees working on all projects of department 5
-SELECT E.EName
+-- 3.
+SELECT
+    SUM(e.Salary) AS Total_Salary,
+    MAX(e.Salary) AS Max_Salary,
+    MIN(e.Salary) AS Min_Salary,
+    AVG(e.Salary) AS Avg_Salary
+FROM EMPLOYEE e
+JOIN DEPARTMENT d ON e.DNO = d.DNO
+WHERE d.DName = 'Accounts';
+
+-- 4.
+SELECT E.Name
 FROM EMPLOYEE E
 WHERE NOT EXISTS (
-    SELECT P.PNo FROM PROJECT P
-    WHERE P.DNo=5
-    AND NOT EXISTS (
-        SELECT W.PNo FROM WORKS_ON W
-        WHERE W.SSN=E.SSN AND W.PNo=P.PNo
-    )
+    SELECT P.PNO
+    FROM PROJECT P
+    WHERE P.DNO = 5
+      AND P.PNO NOT IN (
+          SELECT W.PNO
+          FROM WORKS_ON W
+          WHERE W.SSN = E.SSN
+      )
 );
 
--- 5. Departments with >=5 employees earning above 6,00,000
-SELECT D.DNo, COUNT(E.SSN) AS EmployeeCount
-FROM DEPARTMENT D
-JOIN EMPLOYEE E ON D.DNo=E.DNo
-WHERE E.Salary > 600000
-GROUP BY D.DNo
-HAVING COUNT(E.SSN) >= 5;
 
-
-
-CREATE OR REPLACE VIEW EmployeeView AS
-SELECT E.EName, D.DName AS Department, DL.DLoc AS Location
+-- 5.
+SELECT
+    E.DNO AS DepartmentNumber,
+    COUNT(E.SSN) AS EmployeesAbove600000
 FROM EMPLOYEE E
-JOIN DEPARTMENT D ON E.DNo=D.DNo
-JOIN DLOCATION DL ON D.DNo=DL.DNo;
+WHERE
+    E.Salary > 600000
+    AND E.DNO IN (
+        SELECT DNO
+        FROM EMPLOYEE
+        GROUP BY DNO
+        HAVING COUNT(*) >5
+    )
+GROUP BY E.DNO;
 
-SELECT * FROM EmployeeView;
 
 
+-- 6.
+CREATE VIEW Employee_Department_Location AS
+SELECT
+    E.Name AS EmployeeName,
+    D.DName AS DepartmentName,
+    L.DLoc AS Location
+FROM EMPLOYEE E
+JOIN DEPARTMENT D ON E.DNO = D.DNO
+JOIN DLOCATION L ON D.DNO = L.DNO;
 
+
+SELECT * FROM Employee_Department_Location;
+
+-- 7.
 DELIMITER //
 
-CREATE TRIGGER Prevent_Project_Delete
+CREATE TRIGGER PREVENT_DELETE
 BEFORE DELETE ON PROJECT
 FOR EACH ROW
 BEGIN
-    IF EXISTS (SELECT 1 FROM WORKS_ON WHERE PNo=OLD.PNo) THEN
+    IF EXISTS (
+        SELECT *
+        FROM WORKS_ON
+        WHERE PNo = OLD.PNo
+    ) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT='Project cannot be deleted as employees are assigned';
+        SET MESSAGE_TEXT = 'The project cannot be deleted as it has an assigned employee';
     END IF;
 END;
 //
 
 DELIMITER ;
 
--- Test trigger
-DELETE FROM PROJECT WHERE PNo=702;
+
+DELETE FROM PROJECT WHERE PNo = 278345;

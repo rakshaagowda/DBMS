@@ -1,57 +1,60 @@
-DROP DATABASE IF EXISTS sailors;
-CREATE DATABASE sailors;
-USE sailors;
 
 
+CREATE DATABASE IF NOT EXISTS Sailors;
+USE Sailors;
 
-CREATE TABLE SAILORS (
-    sid INT PRIMARY KEY,
-    sname VARCHAR(50),
-    rating INT,
-    age INT
+
+CREATE TABLE sailor (
+    sid INT NOT NULL,
+    age INT,
+    sname VARCHAR(25),
+    rating DECIMAL(3,1),
+    PRIMARY KEY (sid)
 );
 
-CREATE TABLE BOAT (
-    bid INT PRIMARY KEY,
-    bname VARCHAR(50),
-    color VARCHAR(50)
+CREATE TABLE boat (
+    bid INT NOT NULL,
+    bname VARCHAR(25),
+    color VARCHAR(15),
+    PRIMARY KEY (bid)
 );
 
-CREATE TABLE RESERVES (
-    sid INT,
-    bid INT,
-    date DATE,
-    FOREIGN KEY (sid) REFERENCES SAILORS(sid),
-    FOREIGN KEY (bid) REFERENCES BOAT(bid)
+CREATE TABLE reservers (
+    sid INT NOT NULL,
+    bid INT NOT NULL,
+    rdate DATE,
+    FOREIGN KEY (sid) REFERENCES sailor(sid) ON DELETE CASCADE,
+    FOREIGN KEY (bid) REFERENCES boat(bid) ON DELETE CASCADE
 );
 
 
+INSERT INTO sailor VALUES
+(1,65,'jhon',9.8),
+(2,55,'Albert',8.0),
+(3,45,'James',7.0),
+(4,35,'sandy',5.0),
+(5,37,'patrick',4.0),
+(6,45,'Dennis',8.0),
+(7,35,'Alstorm',9.8);
 
-INSERT INTO SAILORS VALUES
-(1,'Albert',8,41),
-(2,'Bob',9,45),
-(3,'Charlie',9,49),
-(4,'David',8,54),
-(5,'Eve',7,59);
+INSERT INTO boat VALUES
+(101,'blue','blue'),
+(102,'red','red'),
+(103,'green','green'),
+(104,'white','white'),
+(105,'horse','green');
 
-INSERT INTO BOAT VALUES
-(101,'Boat1','Red'),
-(102,'Boat2','Blue'),
-(103,'Boat3','Green'),
-(104,'Boat4','Yellow'),
-(105,'Boat5','White');
+INSERT INTO reservers VALUES
+(1,101,'2008-01-01'),
+(1,102,'2008-06-09'),
+(1,103,'2008-01-01'),
+(2,104,'2008-03-03'),
+(2,105,'2008-09-08'),
+(6,101,'2008-01-01'),
+(4,105,'2008-09-09'),
+(5,104,'2008-01-05'),
+(1,104,'2008-01-11'),
+(1,105,'2008-01-12');
 
-INSERT INTO RESERVES VALUES
-(1,101,'2023-01-01'),
-(1,102,'2023-02-01'),
-(1,103,'2023-03-01'),
-(1,104,'2023-04-01'),
-(1,105,'2023-05-01'),
-(2,101,'2023-02-01'),
-(3,101,'2023-03-01'),
-(4,101,'2023-04-01'),
-(5,101,'2023-05-01'),
-(2,102,'2023-02-01'),
-(3,103,'2023-03-01'),
-(4,104,'2023-04-01'),
-(5,105,'2023-05-01');
+
+

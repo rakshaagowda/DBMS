@@ -1,85 +1,84 @@
-DROP DATABASE IF EXISTS Student_enrollment;
-CREATE DATABASE Student_enrollment;
-USE Student_enrollment;
+CREATE DATABASE Student_Course_DB;
+USE Student_Course_DB;
 
 
-
-CREATE TABLE STUDENT (
-    regno VARCHAR(40) PRIMARY KEY,
-    name VARCHAR(100),
-    major VARCHAR(100),
+CREATE TABLE student (
+    regno VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255),
+    major VARCHAR(255),
     bdate DATE
 );
 
-CREATE TABLE COURSE (
-    course INT PRIMARY KEY,
-    cname VARCHAR(100),
-    dept VARCHAR(100)
+
+CREATE TABLE course (
+    course_no INT PRIMARY KEY,
+    cname VARCHAR(255),
+    dept VARCHAR(255)
 );
 
-CREATE TABLE ENROLL (
-    regno VARCHAR(40),
-    course INT,
+
+CREATE TABLE textbook (
+    book_ISBN INT PRIMARY KEY,
+    book_title VARCHAR(255),
+    publisher VARCHAR(255),
+    author VARCHAR(255)
+);
+
+CREATE TABLE enroll (
+    regno VARCHAR(50),
+    course_no INT,
     sem INT,
     marks INT,
-    FOREIGN KEY (regno) REFERENCES STUDENT(regno) ON DELETE CASCADE,
-    FOREIGN KEY (course) REFERENCES COURSE(course) ON DELETE CASCADE
+    FOREIGN KEY (regno) REFERENCES student(regno)
+        ON DELETE CASCADE,
+    FOREIGN KEY (course_no) REFERENCES  course(course_no)
+        ON DELETE CASCADE
 );
 
-CREATE TABLE TEXT (
-    book_ISBN INT PRIMARY KEY,
-    title VARCHAR(100),
-    publisher VARCHAR(100),
-    author VARCHAR(100)
-);
 
-CREATE TABLE BOOK_ADOPTION (
-    course INT,
+CREATE TABLE book_adoption (
+    course_no INT,
     sem INT,
     book_ISBN INT,
-    FOREIGN KEY (course) REFERENCES COURSE(course) ON DELETE CASCADE,
-    FOREIGN KEY (book_ISBN) REFERENCES TEXT(book_ISBN) ON DELETE CASCADE
+    PRIMARY KEY (course_no, sem, book_ISBN),
+    FOREIGN KEY (course_no) REFERENCES course (course_no)
+        ON DELETE CASCADE,
+    FOREIGN KEY (book_ISBN) REFERENCES textbook(book_ISBN)
+        ON DELETE CASCADE
 );
 
+INSERT INTO student VALUES
+('S001', 'John Doe', 'Computer Science', '1990-01-01'),
+('S002', 'Jane Smith', 'Electrical Engineering', '1992-05-15'),
+('S003', 'Bob Johnson', 'Mechanical Engineering', '1991-08-20'),
+('S004', 'Alice Brown', 'Computer Science', '1993-03-10'),
+('S005', 'Charlie Davis', 'Physics', '1992-11-25');
 
+INSERT INTO course VALUES
+(1, 'Database Management Systems', 'CS'),
+(2, 'Computer Networks', 'CS'),
+(3, 'Introduction to Physics', 'Physics'),
+(4, 'Mechanics of Materials', 'Mechanical Engineering'),
+(5, 'Digital Signal Processing', 'Electrical Engineering');
 
-INSERT INTO STUDENT VALUES
-('01HF235','Student_1','CSE','2001-05-15'),
-('01HF354','Student_2','Literature','2002-06-10'),
-('01HF254','Student_3','Philosophy','2000-04-04'),
-('01HF653','Student_4','History','2003-10-12'),
-('01HF234','Student_5','Computer Economics','2001-10-10'),
-('01HF699','Student_6','Computer Economics','2001-10-10');
+INSERT INTO enroll VALUES
+('S001', 1, 1, 85),
+('S002', 1, 1, 72),
+('S003', 2, 1, 68),
+('S004', 1, 1, 90),
+('S005', 3, 1, 75);
 
-INSERT INTO COURSE VALUES
-(1,'DBMS','CS'),
-(2,'Literature','English'),
-(3,'Philosophy','Philosophy'),
-(4,'History','Social Science'),
-(5,'Computer Economics','CS');
+INSERT INTO textbook VALUES
+(123456789, 'Database Management Systems', 'Pearson', 'Author1'),
+(234567890, 'Computer Networks', 'McGraw Hill', 'Author2'),
+(345678901, 'Introduction to Physics', 'Wiley', 'Author3'),
+(456789012, 'Mechanics of Materials', 'Springer', 'Author4'),
+(567890123, 'Digital Signal Processing', 'Pearson', 'Author5');
 
-INSERT INTO ENROLL VALUES
-('01HF235',1,5,85),
-('01HF354',2,6,87),
-('01HF254',3,3,95),
-('01HF653',4,3,80),
-('01HF234',5,5,75),
-('01HF699',1,6,90);
+INSERT INTO book_adoption VALUES
+(1, 1, 123456789),
+(1, 2, 234567890),
+(3, 8, 345678901),
+(4, 4, 123456789),
+(5, 3, 234567890);
 
-INSERT INTO TEXT VALUES
-(241563,'Operating Systems','Pearson','Silberschatz'),
-(532678,'Complete Works of Shakespeare','Oxford','Shakespeare'),
-(453723,'Immanuel Kant','Delphi Classics','Immanuel Kant'),
-(278345,'History of the World','The Times','Richard Overy'),
-(426784,'Behavioural Economics','Pearson','David Orrel'),
-(469691,'Code with Fun','Tim David','David Warner'),
-(767676,'Fun & Philosophy','Delphi Classics','Immanuel Kant');
-
-INSERT INTO BOOK_ADOPTION VALUES
-(1,5,241563),
-(2,6,532678),
-(3,3,453723),
-(4,3,278345),
-(1,6,426784),
-(1,5,469691),
-(3,6,767676);

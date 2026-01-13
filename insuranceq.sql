@@ -1,59 +1,60 @@
--- 1. Total number of people owning cars involved in accidents in 2021
-SELECT COUNT(*)
-FROM accident
-JOIN participated USING(report_no)
-WHERE YEAR(accident_date)=2021;
-
--- 2. Number of accidents involving Smith’s cars
-SELECT COUNT(*)
-FROM accident
-JOIN participated USING(report_no)
-JOIN person USING(driver_id)
-WHERE driver_name='Smith';
-
--- 3. Add a new accident
-INSERT INTO accident VALUES (46969,'2024-04-05','Mandya');
-INSERT INTO participated VALUES ('D555','KA-21-BD-4728',46969,50000);
-
--- 4. Delete Mazda belonging to Smith
-DELETE FROM car
-WHERE model='Mazda'
-AND reg_no IN (
-    SELECT reg_no
-    FROM owns
-    JOIN person USING(driver_id)
-    WHERE driver_name='Smith'
-);
-
--- 5. Update damage amount
-UPDATE participated
-SET damage_amount=2000
-WHERE reg_no='KA-09-MA-1234'
-AND report_no=65738;
-
-
-
-CREATE OR REPLACE VIEW AccidentCars AS
-SELECT DISTINCT model, c_year
-FROM car
-JOIN participated USING(reg_no);
-
-SELECT * FROM AccidentCars;
 
 
 
 
+/* 1. Number of drivers involved in accidents in 2021 */
+SELECT COUNT(DISTINCT o.driver_id)
+FROM owns o, participated ptd, accident a
+WHERE o.driver_id = ptd.driver_id
+AND ptd.reportno = a.reportno
+AND a.accd_date LIKE '%2021%';
 
---Working trigger
+/* 2. Number of accidents involving cars owned by Smith */
+SELECT COUNT(DISTINCT a.reportno)
+FROM car c, participated ptd, person p, accident a
+WHERE c.regno = ptd.regno
+AND ptd.driver_id = p.driver_id
+AND ptd.reportno = a.reportno
+AND p.name LIKE '%Smith%';
+
+/* 3. Delete Mazda cars owned by Smith */
+DELETE c
+FROM car c, participated ptd, person p
+WHERE c.regno = ptd.regno
+AND ptd.driver_id = p.driver_id
+AND p.name LIKE '%Smith%'
+AND c.model LIKE '%Mazda%';
+
+/* 4. Update damage amount for car containing 1234 */
+UPDATE participated ptd
+JOIN car c ON c.regno = ptd.regno
+JOIN accident a ON a.reportno = ptd.reportno
+SET ptd.damage_amount = 52000
+WHERE c.regno LIKE '%1234%';
+
+/* 5. View of car models involved in accidents */
+CREATE VIEW models AS
+SELECT c.model, c.year
+FROM participated ptd
+JOIN accident a ON a.reportno = ptd.reportno
+JOIN car c ON c.regno = ptd.regno;
+
+
 DELIMITER //
-CREATE TRIGGER PreventParticipation
+
+CREATE TRIGGER xy
 BEFORE INSERT ON participated
 FOR EACH ROW
 BEGIN
-    IF 3<= (SELECT COUNT(*) FROM Participated JOIN Person USING(driver_id) WHERE driver_id = NEW.driver_id) THEN
-    SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT='Driver already has participated in 3 accidents ';
+    IF (
+        SELECT COUNT(*)
+        FROM participated ptd
+        WHERE ptd.driver_id = NEW.driver_id
+    ) >= 2 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'cancel license';
     END IF;
 END;
 //
-DELIMITER;   
+
+DELIMITER ;
