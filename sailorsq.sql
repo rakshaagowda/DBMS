@@ -11,21 +11,32 @@ UNION
 SELECT DISTINCT r.sid FROM reservers r WHERE r.bid = 103;
 
 /* 3Sailors who did NOT reserve boats by storm */
-SELECT s.sname
-FROM sailor s
-WHERE s.sid NOT IN (
-    SELECT r.sid
-    FROM reservers r JOIN sailor s2
-    ON r.sid = s2.sid
-    WHERE s2.sname LIKE '%storm%'
-);
+
+ select distinct s.sname
+ from sailors s
+ left join reserves r on s.sid=r.sid
+ where r.sid is null and s.sname like "%storm"
+ order by s.sname asc;
+
 
 /* 4 Sailors who reserved ALL boats */
 SELECT s.sname
 FROM sailor s JOIN reservers r ON r.sid = s.sid
 GROUP BY s.sid
 HAVING COUNT(DISTINCT r.bid) = (SELECT COUNT(*) FROM boat);
-
+/* 4 Sailors who reserved ALL boats */
+SELECT s.sname
+ FROM sailors s
+ WHERE NOT EXISTS (
+    SELECT *
+    FROM boats b
+    WHERE NOT EXISTS (
+        SELECT *
+        FROM reserves r
+        WHERE r.sid = s.sid
+        AND r.bid = b.bid
+    )
+);
 /*  5 Oldest sailor */
 SELECT sname, age FROM sailor WHERE age = (SELECT MAX(age) FROM sailor);
 
@@ -58,7 +69,5 @@ END;
 
 DELIMITER ;
 
-/* =========================
-   TEST TRIGGER
-========================= */
--- DELETE FROM boat WHERE bid = 103;
+
+ DELETE FROM boat WHERE bid = 103;
