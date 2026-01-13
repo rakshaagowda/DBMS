@@ -16,8 +16,10 @@ WHERE c.regno = ptd.regno
 AND ptd.driver_id = p.driver_id
 AND ptd.reportno = a.reportno
 AND p.name LIKE '%Smith%';
-
-/* 3. Delete Mazda cars owned by Smith */
+--3
+ INSERT INTO accident VALUES (46969,'2024-04-05','Mandya');
+INSERT INTO participated VALUES ('D555','KA-21-BD-4728',46969,50000);
+/* 4. Delete Mazda cars owned by Smith */
 DELETE c
 FROM car c, participated ptd, person p
 WHERE c.regno = ptd.regno
@@ -25,14 +27,14 @@ AND ptd.driver_id = p.driver_id
 AND p.name LIKE '%Smith%'
 AND c.model LIKE '%Mazda%';
 
-/* 4. Update damage amount for car containing 1234 */
+/* 5. Update damage amount for car containing 1234 */
 UPDATE participated ptd
 JOIN car c ON c.regno = ptd.regno
 JOIN accident a ON a.reportno = ptd.reportno
 SET ptd.damage_amount = 52000
 WHERE c.regno LIKE '%1234%';
 
-/* 5. View of car models involved in accidents */
+/* 6. View of car models involved in accidents */
 CREATE VIEW models AS
 SELECT c.model, c.year
 FROM participated ptd
